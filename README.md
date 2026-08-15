@@ -12,29 +12,29 @@ order: header, hero, marquee, authority/video-transition, video section,
 curriculum ("What You'll Learn") with the evergreen countdown, audience
 fit, disqualifiers, founder's final word, and a footer with Disclaimer and
 Privacy Policy as native `<dialog>` modals. This is the whole page as
-scoped by the build brief. Two real assets are still missing (see below),
-and that is the only reason this is not launch-ready yet — everything
-else, including all copy, tracking infrastructure, the countdown, and
+scoped by the build brief. The founder photo is now in place; the video
+and one reference photo are the remaining real assets (see below), and
+that is the only reason this is not launch-ready yet — everything else,
+including all copy, tracking infrastructure, the countdown, and
 accessibility handling, is finished and functional as written.
 
 **This is committed locally but has not been pushed to GitHub yet.**
 Nothing beyond Phase 2 is live on the repository until the next push.
 
-### What is genuinely missing, and why
+### Founder photo — done
 
-1. **Founder photo.** The circular frame shows a gold monogram ("CA")
-   instead of a photograph, because no image file has been supplied.
-   Deliberate finished state, not a broken placeholder. To add the real
-   photo:
-   - Add it to an `assets/` folder in this repo (WebP, compressed, per
-     the brief's performance requirement).
-   - In `index.html`, find `.founder-frame-inner` and follow the inline
-     comment directly above the monogram `<span>`: replace that span with
-     an `<img>` pointing at the new asset, with real, descriptive `alt`
-     text. The ring, shadow, and circular crop live on the surrounding
-     elements, not the image, so nothing else needs to change.
+`assets/founder-photo.webp` is the supplied photo, cropped to a square
+head-and-shoulders composition (not the full body — a full-body photo
+forced into a circle reads badly, so it was reframed around the face and
+upper chest with normal headshot headroom) and re-encoded to 480×480 WebP
+at ~16KB. The circular mask, gold ring, and shadow are all applied by CSS
+on the surrounding frame (`object-fit: cover` inside a clipped circle), so
+the image itself is a plain square — nothing about it depends on being
+circular, which keeps it easy to reuse elsewhere if needed later.
 
-2. **Training video.** The video section renders a complete, styled 16:9
+### What is still genuinely missing, and why
+
+1. **Training video.** The video section renders a complete, styled 16:9
    frame (gold border/glow, vignette, play button) but has no video
    behind it, because no Vimeo/YouTube/CDN URL has been supplied. To wire
    it up:
@@ -48,11 +48,11 @@ Nothing beyond Phase 2 is live on the repository until the next push.
      API), which depends on which platform you host on. Tell me which one
      and I will wire that specific event next.
 
-3. **"Replaced by AI" reference photo** (audience-fit section, fourth
+2. **"Replaced by AI" reference photo** (audience-fit section, fourth
    card). A dashed placeholder slot is reserved but intentionally left
    empty — see "Flagged risk" below before sending an image for this slot.
 
-4. **Meta Pixel / TikTok Pixel IDs.** Every CTA already calls
+3. **Meta Pixel / TikTok Pixel IDs.** Every CTA already calls
    `trackCTA('<section-name>')`, which pushes a real, working event into
    `window.dataLayer` — you can confirm this is firing correctly today by
    opening the browser console and clicking any CTA. It is not yet wired
@@ -60,7 +60,7 @@ Nothing beyond Phase 2 is live on the repository until the next push.
    Pixel IDs; dropping in placeholder IDs would ship tracking that looks
    like it works but silently reports nothing.
 
-5. **Business contact info for the footer.** Both the Disclaimer and
+4. **Business contact info for the footer.** Both the Disclaimer and
    Privacy Policy modals currently show
    `[BUSINESS EMAIL OR WHATSAPP CONTACT — TO BE SUPPLIED]` in their
    Contact section. I did not invent a placeholder email or number for a
@@ -191,22 +191,27 @@ same set.
   all vanilla JS, roughly 120 lines combined, no framework or library.
 - Fonts loaded via Google Fonts with `preconnect` and `display=swap` so
   text is not blocked waiting on font download.
-- No raster images anywhere in the file yet — the founder frame and every
-  curriculum/audience icon are inline SVG, so there is nothing to compress
-  or lazy-load until the founder photo and video are added. When those
-  two assets go in, they should follow the brief's requirements exactly:
-  WebP, compressed, `loading="lazy"` on anything below the fold, and the
-  video embedded as an iframe pointing at external hosting (this is
-  already how `initVideo()` is written — see the missing-assets list
-  above), never an inline raw video file.
+- One real photo on the page now: `assets/founder-photo.webp`, 480×480,
+  ~16KB. Everything else is still inline SVG (every curriculum/audience
+  icon, the CTA and disqualifier icons), so there is nothing else to
+  compress until the video is added. The founder photo did not get
+  `loading="lazy"` — it sits inside the second section on the page, close
+  enough to the top of the viewport on most phones that lazy-loading it
+  would just delay a visible element for no real benefit; everything
+  below the fold (once there is more imagery) should still be lazy-loaded.
+  When the video goes in, it should follow the brief's requirements
+  exactly: embedded as an iframe pointing at external hosting (already how
+  `initVideo()` is written — see the missing-assets list above), never an
+  inline raw video file.
 - Every internal anchor (`#video`, `#curriculum`, `#who-for`,
   `#who-not-for`) now resolves to a real section in the same file, so the
   CTA chain scrolls correctly end to end.
 
 ## Known gaps before this can run as paid traffic
 
-- Founder photo, training video URL, and the audience-section reference
-  photo are not in the file yet (see "What is genuinely missing" above).
+- Training video URL and the audience-section reference photo are not in
+  the file yet (see "What is still genuinely missing" above). The founder
+  photo is done.
 - No Pixel IDs wired in — CTA and video-start events are captured in
   `window.dataLayer` but not yet sent to Meta or TikTok (see CTA
   specification above).

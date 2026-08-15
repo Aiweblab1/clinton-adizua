@@ -314,14 +314,6 @@
     object-fit: cover;
   }
 
-  .founder-monogram {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(2rem, 6vw, 2.75rem);
-    letter-spacing: 0.03em;
-    color: var(--gold);
-  }
-
   .authority-line {
     margin-top: 1.75rem;
     max-width: 34ch;
@@ -895,17 +887,8 @@
 
     <section class="authority" aria-labelledby="authority-heading">
       <div class="founder-frame">
-        <div class="founder-frame-inner" role="img" aria-label="Clinton Adizua, founder of The Real AI Lab">
-          <!--
-            Real photo goes here once supplied. Replace the
-            .founder-monogram span below with:
-              <img src="assets/founder-photo.webp" alt="Clinton Adizua, founder of The Real AI Lab" />
-            and delete the span. Keep the surrounding .founder-frame
-            and .founder-frame-inner elements unchanged — the ring,
-            shadow, and circular crop are defined on them, not on
-            the image itself.
-          -->
-          <span class="founder-monogram" aria-hidden="true">CA</span>
+        <div class="founder-frame-inner">
+          <img src="assets/founder-photo.webp" alt="Clinton Adizua, founder of The Real AI Lab" width="480" height="480" />
         </div>
       </div>
       <p id="authority-heading" class="authority-line">Training starts today but before you join, watch this 3-minute video first.</p>
