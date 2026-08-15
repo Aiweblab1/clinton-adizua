@@ -591,26 +591,23 @@
     color: var(--ink-70);
   }
 
-  /* Reserved slot for the client-supplied "replaced by AI" reference
-     photo on the fourth card only. Left empty (not a broken <img>)
-     until a real, rights-cleared, non-identifiable image is supplied
-     — see the README for why a specific real person's photo should
-     not go here without their consent. */
+  /* "Replaced by AI" reference graphic on the fourth audience card.
+     This is a stylized illustration (silhouetted, non-identifiable
+     figures), not a photo of real named individuals — that is what
+     makes it safe to use without the consent issue flagged for a
+     literal photo of specific real people; see the README. */
   .audience-photo-slot {
     margin-top: 1rem;
     aspect-ratio: 4 / 3;
     border-radius: 10px;
-    border: 1.5px dashed var(--ink-12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    overflow: hidden;
   }
 
-  .audience-photo-slot span {
-    font-size: 0.8rem;
-    color: var(--ink-45);
-    text-align: center;
-    padding: 0 1rem;
+  .audience-photo-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .audience-section .cta-button {
@@ -1046,7 +1043,7 @@
           </span>
           <p>Tech &amp; sales professionals who do not want to be sacked like these guys below because they allowed AI to replace them.</p>
           <div class="audience-photo-slot">
-            <span>Reference image reserved — non-identifiable, rights-cleared photo only, see README</span>
+            <img src="assets/replaced-by-ai.webp" alt="Illustrative graphic of five silhouetted professionals — programmer, content creator, data analyst, copywriter, and CRM specialist — each stamped 'sacked,' representing roles being displaced by AI." width="800" height="636" loading="lazy" />
           </div>
         </div>
       </div>

@@ -12,11 +12,12 @@ order: header, hero, marquee, authority/video-transition, video section,
 curriculum ("What You'll Learn") with the evergreen countdown, audience
 fit, disqualifiers, founder's final word, and a footer with Disclaimer and
 Privacy Policy as native `<dialog>` modals. This is the whole page as
-scoped by the build brief. The founder photo is now in place; the video
-and one reference photo are the remaining real assets (see below), and
-that is the only reason this is not launch-ready yet — everything else,
-including all copy, tracking infrastructure, the countdown, and
-accessibility handling, is finished and functional as written.
+scoped by the build brief. The founder photo and the audience-section
+reference graphic are now both in place; the video is the one remaining
+real asset (see below), and that is the only reason this is not
+launch-ready yet — everything else, including all copy, tracking
+infrastructure, the countdown, and accessibility handling, is finished
+and functional as written.
 
 **This is committed locally but has not been pushed to GitHub yet.**
 Nothing beyond Phase 2 is live on the repository until the next push.
@@ -31,6 +32,22 @@ at ~16KB. The circular mask, gold ring, and shadow are all applied by CSS
 on the surrounding frame (`object-fit: cover` inside a clipped circle), so
 the image itself is a plain square — nothing about it depends on being
 circular, which keeps it easy to reuse elsewhere if needed later.
+
+### "Replaced by AI" reference graphic — done, and the earlier risk is resolved
+
+`assets/replaced-by-ai.webp` is a stylized illustration — five
+silhouetted, non-identifiable figures each stamped "sacked," with role
+tags (programmer, content creator, data analyst, copywriter, CRM
+specialist). Because the faces are not real, identifiable people, this
+does not trigger the consent risk flagged in the previous version of this
+README (see the git history for that note if you want the full reasoning
+again). The supplied graphic was a two-part composite — this photo grid,
+plus a separate "REPLACED" role-list card stacked beneath it. Only the
+photo grid was used here; the role-list portion was dropped because it
+duplicates information already in the page's copy, and a tall composite
+with two stacked graphics and fine print would not read clearly at the
+small size this card renders at. If you want the full composite instead,
+say so and it will be swapped in as-is.
 
 ### What is still genuinely missing, and why
 
@@ -48,11 +65,7 @@ circular, which keeps it easy to reuse elsewhere if needed later.
      API), which depends on which platform you host on. Tell me which one
      and I will wire that specific event next.
 
-2. **"Replaced by AI" reference photo** (audience-fit section, fourth
-   card). A dashed placeholder slot is reserved but intentionally left
-   empty — see "Flagged risk" below before sending an image for this slot.
-
-3. **Meta Pixel / TikTok Pixel IDs.** Every CTA already calls
+2. **Meta Pixel / TikTok Pixel IDs.** Every CTA already calls
    `trackCTA('<section-name>')`, which pushes a real, working event into
    `window.dataLayer` — you can confirm this is firing correctly today by
    opening the browser console and clicking any CTA. It is not yet wired
@@ -60,31 +73,13 @@ circular, which keeps it easy to reuse elsewhere if needed later.
    Pixel IDs; dropping in placeholder IDs would ship tracking that looks
    like it works but silently reports nothing.
 
-4. **Business contact info for the footer.** Both the Disclaimer and
+3. **Business contact info for the footer.** Both the Disclaimer and
    Privacy Policy modals currently show
    `[BUSINESS EMAIL OR WHATSAPP CONTACT — TO BE SUPPLIED]` in their
    Contact section. I did not invent a placeholder email or number for a
    real legal document — that is worse than leaving it visibly unfilled.
    Send the real contact detail and I will drop it into both
    `#disclaimerContact` and `#privacyContact` in one pass.
-
-### Flagged risk — do not skip this before sending the audience-section photo
-
-The brief's own content section describes this card as needing photos of
-real people who were "sacked... because they allowed AI to replace them,"
-while Section 1 of the same brief requires "no use of real, identifiable
-third-party people/images without their consent." Those two instructions
-conflict if the intent is real screenshots of specific real individuals
-(for example, pulled from a news article or someone's social media)
-without their permission — that is a right-of-publicity and, depending on
-the jurisdiction, defamation-adjacent risk, separate from the ad-platform
-risk already flagged for the countdown. My recommendation: use a licensed
-stock photo of a generic, non-identifiable professional (a model, not a
-specific real named individual), which delivers the same visual point
-without the legal exposure. If you have real people who have consented in
-writing to appear, that changes the calculus — tell me and I will drop
-their photo in directly. If it is unclear, tell me before sending
-anything and I will hold this slot rather than publish it.
 
 ### Content-preservation notes for Phases 3–8
 
@@ -209,9 +204,9 @@ same set.
 
 ## Known gaps before this can run as paid traffic
 
-- Training video URL and the audience-section reference photo are not in
-  the file yet (see "What is still genuinely missing" above). The founder
-  photo is done.
+- Training video URL is not in the file yet (see "What is still
+  genuinely missing" above). Both photo assets — founder photo and the
+  audience-section reference graphic — are done.
 - No Pixel IDs wired in — CTA and video-start events are captured in
   `window.dataLayer` but not yet sent to Meta or TikTok (see CTA
   specification above).
