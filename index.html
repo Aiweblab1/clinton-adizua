@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>THE REAL AI LAB — Build Real Software With AI, No Coding Experience Required</title>
+<meta name="description" content="Learn to build websites, automation systems, and SaaS products with AI, with no developer, no agency, and no coding background. Watch the free training video first." />
+
+<!-- Open Graph -->
+<meta property="og:title" content="THE REAL AI LAB — Build Real Software With AI" />
+<meta property="og:description" content="No developer. No agency. No coding experience. Just AI, the right prompts, and a step-by-step system." />
+<meta property="og:type" content="website" />
+
+<!-- Fonts: preconnect first so the actual font request is not blocked behind a fresh DNS + TLS handshake -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+  /* ============================================================
+     DESIGN TOKENS
+     Locked palette: paper / ink / gold / blue. Every color used
+     anywhere on this page must resolve to one of these four
+     variables (or a computed opacity of one of them). Do not
+     introduce a new hue in later phases without updating this list.
+     ============================================================ */
+  :root {
+    --paper: #FAF8F3;
+    --ink: #14151A;
+    --gold: #D9A441;
+    --blue: #2F4FD6;
+
+    --ink-70: rgba(20, 21, 26, 0.7);
+    --ink-45: rgba(20, 21, 26, 0.45);
+    --ink-12: rgba(20, 21, 26, 0.12);
+    --paper-85: rgba(250, 248, 243, 0.85);
+    --paper-60: rgba(250, 248, 243, 0.6);
+
+    --font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
+    --font-body: 'Inter', 'Segoe UI', sans-serif;
+
+    /* Single CTA spec — reused verbatim on every future CTA instance
+       on this page. Do not fork this in a later phase; add a
+       secondary/outline variant off the same box-model instead. */
+    --cta-padding-y: 1.05rem;
+    --cta-padding-x: 2.25rem;
+    --cta-font-size: 1rem;
+    --cta-radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden; /* belt-and-braces against accidental horizontal scroll */
+  }
+
+  img { max-width: 100%; display: block; }
+
+  a { color: inherit; }
+
+  /* Accessible skip link — hidden until keyboard-focused */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.75rem 1.25rem;
+    z-index: 1000;
+    border-radius: 0 0 8px 0;
+    font-family: var(--font-body);
+    font-weight: 600;
+  }
+  .skip-link:focus {
+    left: 0;
+  }
+
+  /* ============================================================
+     HEADER
+     ============================================================ */
+  .site-header {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem clamp(1.25rem, 5vw, 4rem);
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  /* ============================================================
+     HERO
+     ============================================================ */
+  .hero {
+    padding: clamp(2rem, 6vw, 3.5rem) clamp(1.25rem, 5vw, 4rem) clamp(3rem, 8vw, 5rem);
+    max-width: 880px;
+  }
+
+  .hero-headline {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2rem, 6.5vw, 3.6rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    opacity: 0;
+    transform: translateY(14px);
+    animation: rise-in 0.7s ease-out 0.05s forwards;
+  }
+
+  .hero-headline .accent {
+    color: var(--gold);
+  }
+
+  @keyframes rise-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-headline {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+  }
+
+  /* Sub-point icon list */
+  .hero-points {
+    list-style: none;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .hero-points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 1.05rem;
+    color: var(--ink-70);
+  }
+
+  .hero-points li.is-positive {
+    color: var(--ink);
+    font-size: 1.15rem;
+    font-weight: 500;
+    margin-top: 0.35rem;
+  }
+
+  .point-icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    margin-top: 0.15rem;
+  }
+
+  /* CTA — single source of truth for geometry. Class name and
+     click handler (trackCTA) stay identical for every future CTA
+     instance; only the visible label text may change per section. */
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2.25rem;
+    padding: var(--cta-padding-y) var(--cta-padding-x);
+    background: var(--gold);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--cta-font-size);
+    border: none;
+    border-radius: var(--cta-radius);
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(20, 21, 26, 0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .cta-button:hover {
+    background: #c9953b;
+    box-shadow: 0 6px 16px rgba(217, 164, 65, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .cta-button:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+  }
+
+  .cta-button:active {
+    transform: translateY(0);
+  }
+
+  /* ============================================================
+     MARQUEE
+     Restrained dark panel — the one deliberate contrast band on
+     an otherwise light page, per the standing color-system rule.
+     Uses ink as a background rather than introducing a new color.
+     ============================================================ */
+  .marquee-section {
+    background: var(--ink);
+    padding: 1.1rem 0;
+    overflow: hidden;
+  }
+
+  .marquee-track-wrapper {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 32s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track-wrapper {
+      animation: none;
+    }
+    .marquee-section {
+      overflow-x: auto;
+    }
+  }
+
+  @keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .marquee-track {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .marquee-item {
+    display: inline-flex;
+    align-items: center;
+    color: var(--paper-85);
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    padding: 0 1.75rem;
+  }
+
+  .marquee-item .highlight {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .marquee-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--blue);
+    flex-shrink: 0;
+  }
+
+  /* ============================================================
+     RESPONSIVE — this page is written mobile-first; the rules
+     above already target 360–430px. This query only widens
+     spacing and caps line length once there is room to spare.
+     ============================================================ */
+  @media (min-width: 720px) {
+    .hero-points li {
+      font-size: 1.1rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <header class="site-header">
+    <span class="logo">The Real AI Lab</span>
+  </header>
+
+  <main id="main-content">
+
+    <section class="hero" aria-labelledby="hero-heading">
+      <h1 id="hero-heading" class="hero-headline">
+        They laughed when I said I would build my own software until I made <span class="accent">$1,000</span> with it.
+      </h1>
+
+      <ul class="hero-points">
+        <li>
+          <svg class="point-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9.5" stroke="#14151A" stroke-opacity="0.45" stroke-width="1.6"/>
+            <line x1="6.5" y1="17.5" x2="17.5" y2="6.5" stroke="#14151A" stroke-opacity="0.45" stroke-width="1.6"/>
+          </svg>
+          <span>No developer.</span>
+        </li>
+        <li>
+          <svg class="point-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9.5" stroke="#14151A" stroke-opacity="0.45" stroke-width="1.6"/>
+            <line x1="6.5" y1="17.5" x2="17.5" y2="6.5" stroke="#14151A" stroke-opacity="0.45" stroke-width="1.6"/>
+          </svg>
+          <span>No agency.</span>
+        </li>
+        <li>
+          <svg class="point-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9.5" stroke="#14151A" stroke-opacity="0.45" stroke-width="1.6"/>
+            <line x1="6.5" y1="17.5" x2="17.5" y2="6.5" stroke="#14151A" stroke-opacity="0.45" stroke-width="1.6"/>
+          </svg>
+          <span>No coding experience</span>
+        </li>
+        <li class="is-positive">
+          <svg class="point-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2.5L13.8 9.2L20.5 11L13.8 12.8L12 19.5L10.2 12.8L3.5 11L10.2 9.2L12 2.5Z" fill="#2F4FD6"/>
+          </svg>
+          <span>just AI, the right prompts, and a step-by-step system that turned an idea into a real software product.</span>
+        </li>
+      </ul>
+
+      <a
+        href="#video"
+        class="cta-button"
+        data-cta="cta_hero"
+        onclick="trackCTA('cta_hero')"
+      >Join The Training Now</a>
+    </section>
+
+    <section class="marquee-section" aria-label="Program highlights">
+      <div class="marquee-track-wrapper">
+        <div class="marquee-track">
+          <span class="marquee-item"><span class="highlight">No Coding Experience</span> Required</span>
+          <span class="marquee-dot" aria-hidden="true"></span>
+          <span class="marquee-item">Built With <span class="highlight">Claude AI</span></span>
+          <span class="marquee-dot" aria-hidden="true"></span>
+          <span class="marquee-item">Real <span class="highlight">$1,000</span> Client Result</span>
+          <span class="marquee-dot" aria-hidden="true"></span>
+          <span class="marquee-item">Websites • Automation • SaaS • Ads • Agentic AI</span>
+          <span class="marquee-dot" aria-hidden="true"></span>
+          <span class="marquee-item"><span class="highlight">Step-By-Step</span> System</span>
+          <span class="marquee-dot" aria-hidden="true"></span>
+        </div>
+        <div class="marquee-track" aria-hidden="true">
+          <span class="marquee-item"><span class="highlight">No Coding Experience</span> Required</span>
+          <span class="marquee-dot" aria-hidden="true"></span>
+          <span class="marquee-item">Built With <span class="highlight">Claude AI</span></span>
+          <span class="marquee-dot" aria-hidden="true"></span>
+          <span class="marquee-item">Real <span class="highlight">$1,000</span> Client Result</span>
+          <span class="marquee-dot" aria-hidden="true"></span>
+          <span class="marquee-item">Websites • Automation • SaaS • Ads • Agentic AI</span>
+          <span class="marquee-dot" aria-hidden="true"></span>
+          <span class="marquee-item"><span class="highlight">Step-By-Step</span> System</span>
+          <span class="marquee-dot" aria-hidden="true"></span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Central click-tracking dispatcher. Every CTA on the page calls
+    // this with a distinct event name (cta_hero, cta_curriculum,
+    // cta_who_for, cta_final) so Events Manager can show which
+    // section actually drives intent, per the build brief.
+    //
+    // Out of scope for Phase 1: this only logs to the console and a
+    // dataLayer array for now. Wiring to Meta Pixel (fbq) and TikTok
+    // Pixel (ttq) needs their real Pixel IDs from you before it goes
+    // live — dropping in placeholder IDs would ship broken tracking,
+    // so that step is deferred rather than faked.
+    window.dataLayer = window.dataLayer || [];
+
+    function trackCTA(eventName) {
+      window.dataLayer.push({ event: eventName });
+      if (window.console && console.info) {
+        console.info('[cta_click]', eventName);
+      }
+    }
+  </script>
+
+</body>
+</html>
