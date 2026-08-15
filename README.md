@@ -5,37 +5,110 @@ Built as a single, self-contained `index.html` (no build step, no framework)
 so it deploys directly on Vercel with **Framework = Other** and a blank
 build command, root as the output directory.
 
-## Status: Phase 2 of a multi-phase build
+## Status: Phases 1–8 built, all sections complete, not yet pushed to GitHub
 
-Built so far: header, hero section, moving marquee strip, and the
-authority/video-transition section (circular founder frame + the
-one-line copy beneath it). Nothing else has been built yet. The
-remaining sections (video embed, curriculum, audience fit,
-disqualifiers, founder's final word, footer with Disclaimer and Privacy
-Policy, evergreen countdown, and Meta/TikTok Pixel wiring) are
-intentionally not in this file yet — they are not stubbed out as empty
-placeholders, they simply do not exist yet, so nothing in this build reads
-as broken or unfinished. They will be added in later commits, phase by
-phase, so each stage can be reviewed on a live Vercel preview before the
-next one is built on top of it.
+The full page structure from the build brief is now in `index.html`, in
+order: header, hero, marquee, authority/video-transition, video section,
+curriculum ("What You'll Learn") with the evergreen countdown, audience
+fit, disqualifiers, founder's final word, and a footer with Disclaimer and
+Privacy Policy as native `<dialog>` modals. This is the whole page as
+scoped by the build brief. Two real assets are still missing (see below),
+and that is the only reason this is not launch-ready yet — everything
+else, including all copy, tracking infrastructure, the countdown, and
+accessibility handling, is finished and functional as written.
 
-### Phase 2 note — founder photo is not yet in the file
+**This is committed locally but has not been pushed to GitHub yet.**
+Nothing beyond Phase 2 is live on the repository until the next push.
 
-The circular frame currently shows a gold monogram ("CA") on an ink
-background instead of a photograph, because no image file has been
-supplied yet. This is a deliberate, finished design state (a letter-mark
-avatar), not a broken image placeholder. When the real photo is ready:
+### What is genuinely missing, and why
 
-1. Add it to an `assets/` folder in this repo (WebP, compressed, per the
-   brief's performance requirement — this is the first image on the page,
-   so this is also where lazy-loading and compression start applying).
-2. In `index.html`, find the `.founder-frame-inner` element and follow the
-   inline comment directly above the monogram `<span>`: replace that span
-   with an `<img>` pointing at the new asset, using real, descriptive
-   `alt` text.
-3. Everything else on the frame (the gold ring, the shadow, the circular
-   crop) is defined on the surrounding elements, not on the image, so it
-   does not need to be touched.
+1. **Founder photo.** The circular frame shows a gold monogram ("CA")
+   instead of a photograph, because no image file has been supplied.
+   Deliberate finished state, not a broken placeholder. To add the real
+   photo:
+   - Add it to an `assets/` folder in this repo (WebP, compressed, per
+     the brief's performance requirement).
+   - In `index.html`, find `.founder-frame-inner` and follow the inline
+     comment directly above the monogram `<span>`: replace that span with
+     an `<img>` pointing at the new asset, with real, descriptive `alt`
+     text. The ring, shadow, and circular crop live on the surrounding
+     elements, not the image, so nothing else needs to change.
+
+2. **Training video.** The video section renders a complete, styled 16:9
+   frame (gold border/glow, vignette, play button) but has no video
+   behind it, because no Vimeo/YouTube/CDN URL has been supplied. To wire
+   it up:
+   - Find `VIDEO_URL` inside the `initVideo()` function near the bottom
+     of the `<script>` block and set it to the real, externally-hosted
+     URL (never an inline raw video file, per the brief).
+   - Clicking play then swaps the poster for a lazy-loaded `<iframe>`
+     and fires a `video_started` event into `window.dataLayer`.
+   - `video_75_percent` is not wired yet — that needs the host
+     platform's own progress API (Vimeo Player SDK or the YouTube IFrame
+     API), which depends on which platform you host on. Tell me which one
+     and I will wire that specific event next.
+
+3. **"Replaced by AI" reference photo** (audience-fit section, fourth
+   card). A dashed placeholder slot is reserved but intentionally left
+   empty — see "Flagged risk" below before sending an image for this slot.
+
+4. **Meta Pixel / TikTok Pixel IDs.** Every CTA already calls
+   `trackCTA('<section-name>')`, which pushes a real, working event into
+   `window.dataLayer` — you can confirm this is firing correctly today by
+   opening the browser console and clicking any CTA. It is not yet wired
+   to `fbq(...)` or `ttq.track(...)` because that requires your real
+   Pixel IDs; dropping in placeholder IDs would ship tracking that looks
+   like it works but silently reports nothing.
+
+5. **Business contact info for the footer.** Both the Disclaimer and
+   Privacy Policy modals currently show
+   `[BUSINESS EMAIL OR WHATSAPP CONTACT — TO BE SUPPLIED]` in their
+   Contact section. I did not invent a placeholder email or number for a
+   real legal document — that is worse than leaving it visibly unfilled.
+   Send the real contact detail and I will drop it into both
+   `#disclaimerContact` and `#privacyContact` in one pass.
+
+### Flagged risk — do not skip this before sending the audience-section photo
+
+The brief's own content section describes this card as needing photos of
+real people who were "sacked... because they allowed AI to replace them,"
+while Section 1 of the same brief requires "no use of real, identifiable
+third-party people/images without their consent." Those two instructions
+conflict if the intent is real screenshots of specific real individuals
+(for example, pulled from a news article or someone's social media)
+without their permission — that is a right-of-publicity and, depending on
+the jurisdiction, defamation-adjacent risk, separate from the ad-platform
+risk already flagged for the countdown. My recommendation: use a licensed
+stock photo of a generic, non-identifiable professional (a model, not a
+specific real named individual), which delivers the same visual point
+without the legal exposure. If you have real people who have consented in
+writing to appear, that changes the calculus — tell me and I will drop
+their photo in directly. If it is unclear, tell me before sending
+anything and I will hold this slot rather than publish it.
+
+### Content-preservation notes for Phases 3–8
+
+- All copy is reproduced exactly from the build brief, including the
+  audience list, disqualifier list, and founder's final word — no
+  rewording, no re-casing, no added or removed contractions ("they're" and
+  "you're" in the source were already contractions and are left as-is;
+  nothing else was contracted).
+- Two whitespace-only fixes were made, both purely typographic and not
+  wording changes: collapsed duplicated internal spaces in two curriculum
+  bullets, and added a single space after the em dash in the curriculum
+  CTA label ("Join Now — Limited Seats for this Cohort" — the source had
+  "Join Now —Limited Seats"). If you want that literal spacing reverted,
+  say so and I will match it exactly.
+- The parenthetical note in the audience section — "(I will send the
+  photos to be used here — no real people's photos or names. Make a
+  proper provision for the photo portion)" — read as an instruction to
+  the builder, not as visitor-facing copy, so it was not rendered on the
+  page. The photo slot it asked for was built instead (see risk note
+  above).
+- The curriculum bullets use custom line-art icons rather than
+  photography, since no curriculum imagery has been supplied yet. This
+  is a finished, production-ready treatment on its own — swapping icons
+  for real photos later is optional, not a fix for something broken.
 
 ## Deploy (Vercel)
 
@@ -45,7 +118,7 @@ avatar), not a broken image placeholder. When the real photo is ready:
 4. Output Directory: repository root (`.`).
 5. Deploy. `index.html` is served as-is.
 
-No environment variables or API keys are required for Phase 1.
+No environment variables or API keys are required for this page at any phase — it is static HTML/CSS/JS end to end.
 
 ## Color system (locked)
 
@@ -76,6 +149,14 @@ same set.
   wired to Meta Pixel or TikTok Pixel yet because that requires your real
   Pixel IDs. Send those and the next phase will replace the console/dataLayer
   call with actual `fbq('trackCustom', ...)` and `ttq.track(...)` calls.
+- Six CTA instances are live: `cta_hero`, `cta_video`, `cta_curriculum`,
+  `cta_who_for`, and `cta_final`, each with its own event name so Events
+  Manager can show which section actually drives intent, per the brief.
+  Label text varies per section (the approved exception): "Join The
+  Training Now" in the hero, video, and audience-fit sections; "Join Now
+  — Limited Seats for this Cohort" after curriculum; "Join Now Before You
+  Continue" before the final word. Geometry, class, and handler are
+  identical across all six.
 
 ## Content notes — what was preserved exactly, and what was a design choice
 
@@ -89,7 +170,8 @@ same set.
   Claude AI, Real $1,000 Client Result, the five skills taught, Step-By-Step
   System) are new copy, written for this phase because the brief calls for
   a marquee but does not supply its line items. This is the one piece of
-  Phase 1 that needs explicit sign-off, since it is not verbatim client copy.
+  the one line of Phase 1 that needed explicit sign-off, since it was not
+  verbatim client copy (still awaiting confirmation as of this commit).
 
 ## Accessibility
 
@@ -105,19 +187,33 @@ same set.
 ## Performance
 
 - No JavaScript framework; the only script on the page is the ~10-line CTA
-  tracking dispatcher.
+  tracking dispatcher, the countdown, and the scroll-reveal observer —
+  all vanilla JS, roughly 120 lines combined, no framework or library.
 - Fonts loaded via Google Fonts with `preconnect` and `display=swap` so
   text is not blocked waiting on font download.
-- No images in this phase, so there is nothing yet to lazy-load or compress
-  — that requirement becomes active starting with the founder photo and
-  video-frame phase.
+- No raster images anywhere in the file yet — the founder frame and every
+  curriculum/audience icon are inline SVG, so there is nothing to compress
+  or lazy-load until the founder photo and video are added. When those
+  two assets go in, they should follow the brief's requirements exactly:
+  WebP, compressed, `loading="lazy"` on anything below the fold, and the
+  video embedded as an iframe pointing at external hosting (this is
+  already how `initVideo()` is written — see the missing-assets list
+  above), never an inline raw video file.
+- Every internal anchor (`#video`, `#curriculum`, `#who-for`,
+  `#who-not-for`) now resolves to a real section in the same file, so the
+  CTA chain scrolls correctly end to end.
 
-## Known gaps (intentionally out of scope for Phase 1)
+## Known gaps before this can run as paid traffic
 
-- No footer, no Privacy Policy, no Disclaimer yet — legally, this page
-  should not run as paid traffic until those exist. Do not launch ads
-  against this commit.
-- No Pixel IDs wired in (see CTA specification above).
-- The hero CTA currently anchors to `#video`, a section that does not
-  exist yet in this file; it will resolve correctly once the video section
-  is built in a later phase.
+- Founder photo, training video URL, and the audience-section reference
+  photo are not in the file yet (see "What is genuinely missing" above).
+- No Pixel IDs wired in — CTA and video-start events are captured in
+  `window.dataLayer` but not yet sent to Meta or TikTok (see CTA
+  specification above).
+- Business contact info is not filled into the footer's legal modals.
+- The marquee's five line items are new copy written for this build, not
+  from the original brief, and still await your explicit sign-off.
+
+None of these are code defects — the page is functionally complete and
+would run correctly end to end as-is. They are real client inputs this
+build cannot fabricate on your behalf.
