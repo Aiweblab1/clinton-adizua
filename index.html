@@ -272,6 +272,67 @@
   }
 
   /* ============================================================
+     AUTHORITY / VIDEO TRANSITION
+     Returns to the paper background after the dark marquee band,
+     continuing the light–dark–light rhythm. The founder photo has
+     not been supplied yet, so the frame renders a monogram in
+     place of an <img> — a deliberate, finished state rather than
+     a broken image icon or empty box. Swapping in the real photo
+     later is a one-line change (see comment at the markup).
+     ============================================================ */
+  .authority {
+    padding: clamp(3rem, 8vw, 5rem) clamp(1.25rem, 5vw, 4rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .founder-frame {
+    width: clamp(140px, 30vw, 200px);
+    height: clamp(140px, 30vw, 200px);
+    border-radius: 50%;
+    padding: 5px;
+    background: linear-gradient(155deg, var(--gold), rgba(217, 164, 65, 0.35));
+    box-shadow: 0 12px 32px rgba(20, 21, 26, 0.14);
+  }
+
+  .founder-frame-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .founder-frame-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .founder-monogram {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 2.75rem);
+    letter-spacing: 0.03em;
+    color: var(--gold);
+  }
+
+  .authority-line {
+    margin-top: 1.75rem;
+    max-width: 34ch;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.15rem, 3.2vw, 1.5rem);
+    line-height: 1.4;
+    color: var(--ink);
+  }
+
+  /* ============================================================
      RESPONSIVE — this page is written mobile-first; the rules
      above already target 360–430px. This query only widens
      spacing and caps line length once there is room to spare.
@@ -363,6 +424,24 @@
           <span class="marquee-dot" aria-hidden="true"></span>
         </div>
       </div>
+    </section>
+
+    <section class="authority" aria-labelledby="authority-heading">
+      <div class="founder-frame">
+        <div class="founder-frame-inner" role="img" aria-label="Clinton Adizua, founder of The Real AI Lab">
+          <!--
+            Real photo goes here once supplied. Replace the
+            .founder-monogram span below with:
+              <img src="assets/founder-photo.webp" alt="Clinton Adizua, founder of The Real AI Lab" />
+            and delete the span. Keep the surrounding .founder-frame
+            and .founder-frame-inner elements unchanged — the ring,
+            shadow, and circular crop are defined on them, not on
+            the image itself.
+          -->
+          <span class="founder-monogram" aria-hidden="true">CA</span>
+        </div>
+      </div>
+      <p id="authority-heading" class="authority-line">Training starts today but before you join, watch this 3-minute video first.</p>
     </section>
 
   </main>

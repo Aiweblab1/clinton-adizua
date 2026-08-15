@@ -5,18 +5,37 @@ Built as a single, self-contained `index.html` (no build step, no framework)
 so it deploys directly on Vercel with **Framework = Other** and a blank
 build command, root as the output directory.
 
-## Status: Phase 1 of a multi-phase build
+## Status: Phase 2 of a multi-phase build
 
-This repository currently contains **only** the header, hero section, and
-moving marquee strip. Nothing else has been built yet. The remaining
-sections (authority/video transition, video embed, curriculum, audience
-fit, disqualifiers, founder's final word, footer with Disclaimer and
-Privacy Policy, evergreen countdown, and Meta/TikTok Pixel wiring) are
+Built so far: header, hero section, moving marquee strip, and the
+authority/video-transition section (circular founder frame + the
+one-line copy beneath it). Nothing else has been built yet. The
+remaining sections (video embed, curriculum, audience fit,
+disqualifiers, founder's final word, footer with Disclaimer and Privacy
+Policy, evergreen countdown, and Meta/TikTok Pixel wiring) are
 intentionally not in this file yet — they are not stubbed out as empty
 placeholders, they simply do not exist yet, so nothing in this build reads
 as broken or unfinished. They will be added in later commits, phase by
 phase, so each stage can be reviewed on a live Vercel preview before the
 next one is built on top of it.
+
+### Phase 2 note — founder photo is not yet in the file
+
+The circular frame currently shows a gold monogram ("CA") on an ink
+background instead of a photograph, because no image file has been
+supplied yet. This is a deliberate, finished design state (a letter-mark
+avatar), not a broken image placeholder. When the real photo is ready:
+
+1. Add it to an `assets/` folder in this repo (WebP, compressed, per the
+   brief's performance requirement — this is the first image on the page,
+   so this is also where lazy-loading and compression start applying).
+2. In `index.html`, find the `.founder-frame-inner` element and follow the
+   inline comment directly above the monogram `<span>`: replace that span
+   with an `<img>` pointing at the new asset, using real, descriptive
+   `alt` text.
+3. Everything else on the frame (the gold ring, the shadow, the circular
+   crop) is defined on the surrounding elements, not on the image, so it
+   does not need to be touched.
 
 ## Deploy (Vercel)
 
