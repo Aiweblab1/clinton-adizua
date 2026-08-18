@@ -12,12 +12,12 @@ order: header, hero, marquee, authority/video-transition, video section,
 curriculum ("What You'll Learn") with the evergreen countdown, audience
 fit, disqualifiers, founder's final word, and a footer with Disclaimer and
 Privacy Policy as native `<dialog>` modals. This is the whole page as
-scoped by the build brief. The founder photo and the audience-section
-reference graphic are now both in place; the video is the one remaining
-real asset (see below), and that is the only reason this is not
-launch-ready yet — everything else, including all copy, tracking
-infrastructure, the countdown, and accessibility handling, is finished
-and functional as written.
+scoped by the build brief. The founder photo, the audience-section
+reference graphic, and the training video are now all in place —
+everything on the page, including all copy, tracking infrastructure, the
+countdown, and accessibility handling, is finished and functional as
+written. What remains is not code, it is inputs only you can provide (see
+below).
 
 **This is committed locally but has not been pushed to GitHub yet.**
 Nothing beyond Phase 2 is live on the repository until the next push.
@@ -49,31 +49,71 @@ with two stacked graphics and fine print would not read clearly at the
 small size this card renders at. If you want the full composite instead,
 say so and it will be swapped in as-is.
 
+### Training video — done, but self-hosted on explicit instruction, which deviates from the brief
+
+`assets/training-video.mp4` is the supplied file, copied in byte-for-byte
+(checksum-verified against the original upload — nothing was re-encoded,
+trimmed, or recompressed, so quality and file size are unchanged: 720p
+H.264/AAC, ~19.7MB, ~3:45). `assets/training-video-poster.jpg` is a frame
+extracted directly from the video itself so the frame shows a real
+preview instead of a blank box before playback.
+
+**This is a direct, explicit override of Section 2 of the original build
+brief**, which specifies hosting externally (Vimeo, YouTube unlisted, or a
+CDN) and states plainly: "never inline a raw video file." You instructed
+otherwise, and this is what was built — self-hosted, served directly from
+this repo's static hosting. Flagging the trade-off plainly rather than
+silently going along with it:
+
+- **No adaptive bitrate.** Vimeo/YouTube serve different quality levels
+  depending on the visitor's connection speed; a self-hosted file is one
+  fixed file regardless of whether someone is on fast WiFi or slow mobile
+  data. Given this page's own audience — described in the brief as
+  including 9–5 workers and freelancers, price- and data-conscious,
+  arriving from paid social ads in Nigeria — this is the segment adaptive
+  streaming was built for.
+- **No global CDN edge caching** the way Vimeo/YouTube provide out of the
+  box. Vercel does serve static assets through its own edge network, so
+  this is not as bad as a plain single-server host, but it is still not
+  equivalent to a dedicated video CDN.
+- **Hosting bandwidth is not free at scale.** Every play downloads roughly
+  19.7MB directly from your Vercel deployment's bandwidth allowance. On
+  Vercel's free tier that is real, could add up meaningfully faster than
+  expected if this page gets meaningful paid-ad traffic, and is worth
+  watching once ads are live.
+- **One genuine upside**: self-hosting made `video_75_percent` — the
+  brief's own "single best signal of buyer intent" — straightforward to
+  implement with the browser's native `timeupdate` event. It is wired in
+  and working now (see below), where it would otherwise still be waiting
+  on a Vimeo/YouTube SDK integration.
+
+If you want to move to external hosting later, the switch is small: swap
+the `<source>` element's `src` for a hosted URL (or reintroduce an
+iframe), and the play-button/tracking logic in `initVideo()` barely
+changes. Nothing here is a dead end if you change your mind.
+
+**Playback behavior as built:** `preload="none"` on the `<video>` element
+means nothing downloads on page load — only the poster image, which is a
+separate lightweight JPEG. The first tap on the gold play button starts
+the actual video download and playback together, and switches on the
+browser's native controls (pause, seek, volume, fullscreen) at that same
+moment, replacing the custom overlay. `video_started` fires on that first
+play; `video_75_percent` fires once, the first time playback crosses 75%
+of the video's duration.
+
 ### What is still genuinely missing, and why
 
-1. **Training video.** The video section renders a complete, styled 16:9
-   frame (gold border/glow, vignette, play button) but has no video
-   behind it, because no Vimeo/YouTube/CDN URL has been supplied. To wire
-   it up:
-   - Find `VIDEO_URL` inside the `initVideo()` function near the bottom
-     of the `<script>` block and set it to the real, externally-hosted
-     URL (never an inline raw video file, per the brief).
-   - Clicking play then swaps the poster for a lazy-loaded `<iframe>`
-     and fires a `video_started` event into `window.dataLayer`.
-   - `video_75_percent` is not wired yet — that needs the host
-     platform's own progress API (Vimeo Player SDK or the YouTube IFrame
-     API), which depends on which platform you host on. Tell me which one
-     and I will wire that specific event next.
-
-2. **Meta Pixel / TikTok Pixel IDs.** Every CTA already calls
+1. **Meta Pixel / TikTok Pixel IDs.** Every CTA already calls
    `trackCTA('<section-name>')`, which pushes a real, working event into
    `window.dataLayer` — you can confirm this is firing correctly today by
-   opening the browser console and clicking any CTA. It is not yet wired
-   to `fbq(...)` or `ttq.track(...)` because that requires your real
-   Pixel IDs; dropping in placeholder IDs would ship tracking that looks
-   like it works but silently reports nothing.
+   opening the browser console and clicking any CTA. The video's
+   `video_started` and `video_75_percent` events push into the same
+   `window.dataLayer` and can be confirmed the same way. None of this is
+   yet wired to `fbq(...)` or `ttq.track(...)` because that requires your
+   real Pixel IDs; dropping in placeholder IDs would ship tracking that
+   looks like it works but silently reports nothing.
 
-3. **Business contact info for the footer.** Both the Disclaimer and
+2. **Business contact info for the footer.** Both the Disclaimer and
    Privacy Policy modals currently show
    `[BUSINESS EMAIL OR WHATSAPP CONTACT — TO BE SUPPLIED]` in their
    Contact section. I did not invent a placeholder email or number for a
@@ -181,38 +221,41 @@ same set.
 
 ## Performance
 
-- No JavaScript framework; the only script on the page is the ~10-line CTA
-  tracking dispatcher, the countdown, and the scroll-reveal observer —
-  all vanilla JS, roughly 120 lines combined, no framework or library.
+- No JavaScript framework; the only script on the page is the CTA
+  tracking dispatcher, the countdown, the scroll-reveal observer, and
+  video playback control — all vanilla JS, roughly 170 lines combined,
+  no framework or library.
 - Fonts loaded via Google Fonts with `preconnect` and `display=swap` so
   text is not blocked waiting on font download.
-- One real photo on the page now: `assets/founder-photo.webp`, 480×480,
-  ~16KB. Everything else is still inline SVG (every curriculum/audience
-  icon, the CTA and disqualifier icons), so there is nothing else to
-  compress until the video is added. The founder photo did not get
-  `loading="lazy"` — it sits inside the second section on the page, close
-  enough to the top of the viewport on most phones that lazy-loading it
-  would just delay a visible element for no real benefit; everything
-  below the fold (once there is more imagery) should still be lazy-loaded.
-  When the video goes in, it should follow the brief's requirements
-  exactly: embedded as an iframe pointing at external hosting (already how
-  `initVideo()` is written — see the missing-assets list above), never an
-  inline raw video file.
-- Every internal anchor (`#video`, `#curriculum`, `#who-for`,
-  `#who-not-for`) now resolves to a real section in the same file, so the
-  CTA chain scrolls correctly end to end.
+- Total media payload: `founder-photo.webp` (~16KB), `replaced-by-ai.webp`
+  (~27KB), `training-video-poster.jpg` (~108KB), and
+  `training-video.mp4` (~19.7MB, only fetched if the visitor presses
+  play — see `preload="none"` in the Training Video section above).
+  Everything else on the page — every curriculum/audience icon, the CTA
+  and disqualifier icons — is inline SVG, so there is nothing else to
+  compress.
+- None of the three images carry `loading="lazy"` — each sits close
+  enough to its own section's top, in a section a visitor reaches by
+  scrolling to it anyway, that lazy-loading would delay a visible element
+  without a real benefit. If future phases add imagery further down the
+  page, that new imagery should be lazy-loaded.
+- CTAs now link out to the WhatsApp training group rather than scrolling
+  between sections — see the git history if you want the original
+  same-page anchor behavior back (`#video`, `#curriculum`, `#who-for`,
+  `#who-not-for`) for reference.
 
 ## Known gaps before this can run as paid traffic
 
-- Training video URL is not in the file yet (see "What is still
-  genuinely missing" above). Both photo assets — founder photo and the
-  audience-section reference graphic — are done.
-- No Pixel IDs wired in — CTA and video-start events are captured in
-  `window.dataLayer` but not yet sent to Meta or TikTok (see CTA
-  specification above).
+- No Pixel IDs wired in — CTA clicks and both video milestone events are
+  captured in `window.dataLayer` but not yet sent to Meta or TikTok (see
+  CTA specification above).
 - Business contact info is not filled into the footer's legal modals.
 - The marquee's five line items are new copy written for this build, not
   from the original brief, and still await your explicit sign-off.
+- Video hosting is self-hosted on your explicit instruction, which
+  overrides the brief's own stated preference for external hosting — see
+  the trade-off written up under "Training video" above before this goes
+  live as paid traffic.
 
 None of these are code defects — the page is functionally complete and
 would run correctly end to end as-is. They are real client inputs this

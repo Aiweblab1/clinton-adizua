@@ -384,13 +384,36 @@
     background: radial-gradient(120% 120% at 50% 20%, #22232b 0%, var(--ink) 70%);
   }
 
+  .video-element {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: var(--ink);
+  }
+
   .video-frame::after {
-    /* soft vignette so the play button and future thumbnail always
-       have enough contrast, regardless of what image sits behind it */
+    /* soft vignette so the play button and poster always have enough
+       contrast, regardless of what frame of the video sits behind it */
     content: "";
     position: absolute;
     inset: 0;
     background: radial-gradient(65% 65% at 50% 45%, transparent 40%, rgba(20, 21, 26, 0.55) 100%);
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  /* Once playback starts, the custom overlay steps aside so the
+     browser's native controls (added in JS at that point) are fully
+     usable — pause, seek, volume, fullscreen — without our gold button
+     or vignette sitting on top of them. */
+  .video-frame.is-playing::after {
+    opacity: 0;
+  }
+
+  .video-frame.is-playing .video-play-button {
+    opacity: 0;
     pointer-events: none;
   }
 
@@ -409,7 +432,7 @@
     justify-content: center;
     cursor: pointer;
     box-shadow: 0 8px 24px rgba(217, 164, 65, 0.45);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
   }
 
   .video-play-button:hover {
@@ -895,16 +918,29 @@
 
     <section class="video-section reveal" id="video" aria-label="Training preview video">
       <div class="video-frame-outer">
-        <div class="video-frame">
+        <div class="video-frame" id="videoFrame">
           <!--
-            No video source has been supplied yet. Once the training
-            video is hosted externally (Vimeo/YouTube unlisted, or a
-            CDN-hosted MP4 — never inline a raw file per the brief),
-            set VIDEO_URL near the bottom of the script and this
-            button will lazy-load a real <iframe> on click instead
-            of doing nothing. Meta "video_started" / "video_75_percent"
-            events attach at the same point — see the script comment.
+            Self-hosted per explicit instruction, overriding the build
+            brief's own stated preference for external hosting
+            (Vimeo/YouTube/CDN). Flagged to the client: this file is
+            served directly from this repo's static hosting rather than
+            a video CDN with adaptive bitrate — see the README for the
+            load-time and hosting-bandwidth trade-off this carries.
+            preload="none" keeps it from downloading anything until the
+            visitor actually presses play, which is what keeps this
+            acceptable on mobile data despite being self-hosted.
           -->
+          <video
+            id="trainingVideo"
+            class="video-element"
+            poster="assets/training-video-poster.jpg"
+            preload="none"
+            playsinline
+          >
+            <source src="assets/training-video.mp4" type="video/mp4" />
+            Your browser does not support embedded video.
+            <a href="assets/training-video.mp4">Download the video</a> instead.
+          </video>
           <button
             class="video-play-button"
             id="videoPlayButton"
@@ -1290,40 +1326,63 @@
     })();
 
     // ------------------------------------------------------------
-    // VIDEO EMBED
-    // VIDEO_URL is intentionally empty until the training video is
-    // hosted externally (Vimeo/YouTube unlisted, or a CDN-hosted
-    // MP4 — never inline a raw file, per the brief). Once it is
-    // set, clicking play swaps the poster for a lazy-loaded iframe
-    // and fires the video_started event; video_75_percent requires
-    // the host platform's own progress API (Vimeo Player SDK or the
-    // YouTube IFrame API), which will be wired in when the real
-    // video URL and host are confirmed.
+    // VIDEO PLAYBACK
+    // Self-hosted <video> element (see the markup comment for why
+    // this deviates from the brief's own stated external-hosting
+    // preference, and the README for the trade-off). Native controls
+    // are withheld until the visitor presses the custom gold play
+    // button, so nothing about the browser's default player shows
+    // before that point — just the poster and the custom overlay.
+    //
+    // A genuine upside of self-hosting: video_75_percent, which was
+    // deferred in earlier phases pending a host platform's SDK
+    // (Vimeo/YouTube), is now straightforward with the native
+    // timeupdate event and needs no external dependency.
     // ------------------------------------------------------------
     (function initVideo() {
-      var VIDEO_URL = ''; // e.g. 'https://player.vimeo.com/video/XXXXXXXXX'
+      var frame = document.getElementById('videoFrame');
+      var video = document.getElementById('trainingVideo');
       var playButton = document.getElementById('videoPlayButton');
-      if (!playButton) return;
+      if (!frame || !video || !playButton) return;
 
-      playButton.addEventListener('click', function () {
-        if (!VIDEO_URL) {
-          if (window.console && console.warn) {
-            console.warn('VIDEO_URL is not set yet — add the hosted video URL in the script before this button can play anything.');
-          }
-          return;
+      var hasFiredStart = false;
+      var hasFired75 = false;
+
+      function startPlayback() {
+        video.setAttribute('controls', '');
+        frame.classList.add('is-playing');
+        video.play().catch(function () {
+          // Autoplay-with-sound can be blocked by the browser even on
+          // a direct user click in rare cases (e.g. certain in-app
+          // browsers). Controls are already visible at this point, so
+          // the visitor can press the native play button themselves
+          // rather than the page silently doing nothing.
+        });
+      }
+
+      playButton.addEventListener('click', startPlayback);
+
+      video.addEventListener('play', function () {
+        if (!hasFiredStart) {
+          hasFiredStart = true;
+          window.dataLayer.push({ event: 'video_started' });
         }
-
-        var frame = playButton.closest('.video-frame');
-        var iframe = document.createElement('iframe');
-        iframe.src = VIDEO_URL;
-        iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
-        iframe.setAttribute('allowfullscreen', '');
-        iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;';
-        frame.innerHTML = '';
-        frame.appendChild(iframe);
-
-        window.dataLayer.push({ event: 'video_started' });
       });
+
+      video.addEventListener('timeupdate', function () {
+        if (hasFired75 || !video.duration) return;
+        if (video.currentTime / video.duration >= 0.75) {
+          hasFired75 = true;
+          window.dataLayer.push({ event: 'video_75_percent' });
+        }
+      });
+
+      // If a visitor pauses and returns to the poster frame via native
+      // controls (e.g. scrubbing back to 0 and stopping), the custom
+      // overlay is intentionally not restored — re-showing a gold play
+      // button on top of active native controls would be confusing.
+      // The native controls remain the single source of playback
+      // control from first play onward.
     })();
   </script>
 
