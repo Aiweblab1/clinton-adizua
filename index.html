@@ -11,6 +11,12 @@
 <meta property="og:description" content="No developer. No agency. No coding experience. Just AI, the right prompts, and a step-by-step system." />
 <meta property="og:type" content="website" />
 
+<!-- TikTok Pixel Code Start -->
+<script>
+!function (w, d, t) {   w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for( var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script") ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};     ttq.load('DA2VFEBC77UAAA42UMQ0');   ttq.page(); }(window, document, 'ttq');
+</script>
+<!-- TikTok Pixel Code End -->
+
 <!-- Fonts: preconnect first so the actual font request is not blocked behind a fresh DNS + TLS handshake -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1193,22 +1199,43 @@
 
   <script>
     // Central click-tracking dispatcher. Every CTA on the page calls
-    // this with a distinct event name (cta_hero, cta_curriculum,
-    // cta_who_for, cta_final) so Events Manager can show which
-    // section actually drives intent, per the build brief.
+    // this with a distinct event name (cta_hero, cta_video,
+    // cta_curriculum, cta_who_for, cta_final) so it's possible to see
+    // which section actually drives intent, per the build brief.
     //
-    // Out of scope for Phase 1: this only logs to the console and a
-    // dataLayer array for now. Wiring to Meta Pixel (fbq) and TikTok
-    // Pixel (ttq) needs their real Pixel IDs from you before it goes
-    // live — dropping in placeholder IDs would ship broken tracking,
-    // so that step is deferred rather than faked.
+    // TikTok Pixel is live as of this commit (ID DA2VFEBC77UAAA42UMQ0,
+    // loaded in <head>). Meta Pixel is not — that's still waiting on
+    // your Pixel ID, and is intentionally not wired to avoid shipping
+    // tracking that looks like it works but silently reports nothing.
     window.dataLayer = window.dataLayer || [];
+
+    // Guards every ttq call so a blocked or slow-to-load pixel script
+    // (ad blockers, privacy extensions, a flaky connection) can never
+    // throw an error that breaks CTA clicks, the countdown, or video
+    // playback — the pixel is additive, never load-bearing for the
+    // page itself.
+    function ttqTrack(eventName, params) {
+      try {
+        if (typeof window.ttq !== 'undefined' && window.ttq.track) {
+          window.ttq.track(eventName, params || {});
+        }
+      } catch (err) {
+        if (window.console && console.warn) {
+          console.warn('[ttq_track_failed]', eventName, err);
+        }
+      }
+    }
 
     function trackCTA(eventName) {
       window.dataLayer.push({ event: eventName });
       if (window.console && console.info) {
         console.info('[cta_click]', eventName);
       }
+      // ClickButton is one of TikTok's standard events, which keeps
+      // this eligible for campaign optimization in Ads Manager; the
+      // per-section name is preserved in content_name so individual
+      // CTAs can still be told apart in reporting.
+      ttqTrack('ClickButton', { content_name: eventName });
     }
 
     // ------------------------------------------------------------
@@ -1338,6 +1365,7 @@
         if (!hasFiredStart) {
           hasFiredStart = true;
           window.dataLayer.push({ event: 'video_started' });
+          ttqTrack('ViewContent', { content_name: 'video_started' });
         }
       });
 
@@ -1346,6 +1374,13 @@
         if (video.currentTime / video.duration >= 0.75) {
           hasFired75 = true;
           window.dataLayer.push({ event: 'video_75_percent' });
+          // Custom event, not a TikTok standard event — kept as its
+          // own named event (rather than folded into ViewContent)
+          // because the brief calls this out specifically as the
+          // single best signal of buyer intent, and it should be easy
+          // to find as its own line in TikTok Events Manager, not
+          // buried as a content_name variant.
+          ttqTrack('video_75_percent');
         }
       });
 

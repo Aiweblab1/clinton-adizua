@@ -107,17 +107,59 @@ moment, replacing the custom overlay. `video_started` fires on that first
 play; `video_75_percent` fires once, the first time playback crosses 75%
 of the video's duration.
 
+### TikTok Pixel — done, live, wired to real events
+
+The base TikTok Pixel snippet (ID `DA2VFEBC77UAAA42UMQ0`) is installed in
+`<head>`, pasted in exactly as supplied — verified character-for-character
+against the code you sent, nothing altered. It loads and fires `ttq.page()`
+on every page load, which alone gives you page-view tracking in TikTok
+Events Manager.
+
+Beyond that base snippet, real interaction events are now wired to it too,
+not just page views:
+
+- **Every CTA click** fires TikTok's `ClickButton` standard event (chosen
+  because standard events are what TikTok Ads Manager can optimize
+  campaigns against — a fully custom event name is not eligible for
+  optimization). The specific section is preserved as a parameter
+  (`content_name: 'cta_hero'`, `'cta_video'`, `'cta_curriculum'`,
+  `'cta_who_for'`, or `'cta_final'`), so you can still tell sections apart
+  inside Events Manager despite them sharing one standard event type.
+- **`video_started`** fires TikTok's `ViewContent` standard event with
+  `content_name: 'video_started'`.
+- **`video_75_percent`** fires as its own custom event, not folded into
+  `ViewContent` — the brief calls this out as the single best buyer-intent
+  signal, so it gets its own clearly-named line in Events Manager rather
+  than being buried as a parameter variant.
+
+All three ttq calls are wrapped in a guard (`ttqTrack()` in the script)
+that silently no-ops if the pixel script is blocked or fails to load —
+an ad blocker or privacy extension on a visitor's device cannot throw an
+error that breaks CTA clicks, the countdown, or video playback. The pixel
+is additive to the page, never load-bearing for it.
+
+**Verify it's actually firing** before spending ad budget on this: open
+TikTok Events Manager → Test Events, load the live page with that tool's
+test mode active, click a CTA and start the video, and confirm
+`ClickButton`, `ViewContent`, and `video_75_percent` show up. That is the
+only way to know the Pixel ID and event wiring are both correct in
+practice, not just correct in the code.
+
+If your actual campaign objective in TikTok Ads Manager is something
+other than "clicks" (for example, if you set up a custom conversion
+around the WhatsApp group specifically), the standard event this fires
+(`ClickButton`) may not be the ideal optimization target — tell me what
+objective you're running and I can switch it to a better-matched standard
+event if one fits more precisely.
+
 ### What is still genuinely missing, and why
 
-1. **Meta Pixel / TikTok Pixel IDs.** Every CTA already calls
-   `trackCTA('<section-name>')`, which pushes a real, working event into
-   `window.dataLayer` — you can confirm this is firing correctly today by
-   opening the browser console and clicking any CTA. The video's
-   `video_started` and `video_75_percent` events push into the same
-   `window.dataLayer` and can be confirmed the same way. None of this is
-   yet wired to `fbq(...)` or `ttq.track(...)` because that requires your
-   real Pixel IDs; dropping in placeholder IDs would ship tracking that
-   looks like it works but silently reports nothing.
+1. **Meta Pixel ID.** The same `trackCTA()` and video-event functions
+   that now call `ttqTrack()` are ready for an equivalent `fbqTrack()` the
+   moment you send a Meta Pixel ID — same guard pattern, same event
+   mapping logic, small addition once the ID exists. Not wired yet because
+   a placeholder ID would ship tracking that looks like it works but
+   silently reports nothing.
 
 2. **Business contact info for the footer.** Both the Disclaimer and
    Privacy Policy modals currently show
@@ -252,9 +294,9 @@ same set.
 
 ## Known gaps before this can run as paid traffic
 
-- No Pixel IDs wired in — CTA clicks and both video milestone events are
-  captured in `window.dataLayer` but not yet sent to Meta or TikTok (see
-  CTA specification above).
+- TikTok Pixel is live and wired to real events (see "TikTok Pixel" above)
+  — verify it in TikTok Events Manager's Test Events tool before spending
+  ad budget. Meta Pixel is not wired yet, pending your Pixel ID.
 - Business contact info is not filled into the footer's legal modals.
 - The marquee's five line items are new copy written for this build, not
   from the original brief, and still await your explicit sign-off.
