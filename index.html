@@ -274,11 +274,12 @@
   /* ============================================================
      AUTHORITY / VIDEO TRANSITION
      Returns to the paper background after the dark marquee band,
-     continuing the light–dark–light rhythm. The founder photo has
-     not been supplied yet, so the frame renders a monogram in
-     place of an <img> — a deliberate, finished state rather than
-     a broken image icon or empty box. Swapping in the real photo
-     later is a one-line change (see comment at the markup).
+     continuing the light–dark–light rhythm. The founder photo that
+     originally sat here was removed on explicit instruction, since
+     the video immediately below already shows the founder speaking
+     directly to camera — a static photo right before that felt
+     redundant. The section is now just this one line, functioning
+     as a quiet transition beat into the video.
      ============================================================ */
   .authority {
     padding: clamp(3rem, 8vw, 5rem) clamp(1.25rem, 5vw, 4rem);
@@ -288,34 +289,7 @@
     text-align: center;
   }
 
-  .founder-frame {
-    width: clamp(140px, 30vw, 200px);
-    height: clamp(140px, 30vw, 200px);
-    border-radius: 50%;
-    padding: 5px;
-    background: linear-gradient(155deg, var(--gold), rgba(217, 164, 65, 0.35));
-    box-shadow: 0 12px 32px rgba(20, 21, 26, 0.14);
-  }
-
-  .founder-frame-inner {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: var(--ink);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-
-  .founder-frame-inner img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
   .authority-line {
-    margin-top: 1.75rem;
     max-width: 34ch;
     font-family: var(--font-display);
     font-weight: 500;
@@ -618,10 +592,13 @@
      This is a stylized illustration (silhouetted, non-identifiable
      figures), not a photo of real named individuals — that is what
      makes it safe to use without the consent issue flagged for a
-     literal photo of specific real people; see the README. */
+     literal photo of specific real people; see the README.
+     Aspect-ratio matches the source image exactly (800x1103) so
+     object-fit: cover has nothing to crop — the full graphic, photo
+     grid and REPLACED role list both, renders intact. */
   .audience-photo-slot {
     margin-top: 1rem;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 800 / 1103;
     border-radius: 10px;
     overflow: hidden;
   }
@@ -908,11 +885,6 @@
     </section>
 
     <section class="authority" aria-labelledby="authority-heading">
-      <div class="founder-frame">
-        <div class="founder-frame-inner">
-          <img src="assets/founder-photo.webp" alt="Clinton Adizua, founder of The Real AI Lab" width="480" height="480" />
-        </div>
-      </div>
       <p id="authority-heading" class="authority-line">Training starts today but before you join, watch this 3-minute video first.</p>
     </section>
 
@@ -1085,7 +1057,7 @@
           </span>
           <p>Tech &amp; sales professionals who do not want to be sacked like these guys below because they allowed AI to replace them.</p>
           <div class="audience-photo-slot">
-            <img src="assets/replaced-by-ai.webp" alt="Illustrative graphic of five silhouetted professionals — programmer, content creator, data analyst, copywriter, and CRM specialist — each stamped 'sacked,' representing roles being displaced by AI." width="800" height="636" loading="lazy" />
+            <img src="assets/replaced-by-ai.webp" alt="Illustrative graphic of five silhouetted professionals — programmer, content creator, data analyst, copywriter, and CRM specialist — each stamped 'sacked,' with a role list beneath confirming each one as 'replaced,' representing roles being displaced by AI." width="800" height="1103" loading="lazy" />
           </div>
         </div>
       </div>

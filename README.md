@@ -12,42 +12,48 @@ order: header, hero, marquee, authority/video-transition, video section,
 curriculum ("What You'll Learn") with the evergreen countdown, audience
 fit, disqualifiers, founder's final word, and a footer with Disclaimer and
 Privacy Policy as native `<dialog>` modals. This is the whole page as
-scoped by the build brief. The founder photo, the audience-section
-reference graphic, and the training video are now all in place —
-everything on the page, including all copy, tracking infrastructure, the
-countdown, and accessibility handling, is finished and functional as
-written. What remains is not code, it is inputs only you can provide (see
-below).
+scoped by the build brief. The audience-section reference graphic and the
+training video are in place — everything on the page, including all copy,
+tracking infrastructure, the countdown, and accessibility handling, is
+finished and functional as written. What remains is not code, it is
+inputs only you can provide (see below).
 
 **This is committed locally but has not been pushed to GitHub yet.**
 Nothing beyond Phase 2 is live on the repository until the next push.
 
-### Founder photo — done
+### Founder photo — removed on explicit instruction
 
-`assets/founder-photo.webp` is the supplied photo, cropped to a square
-head-and-shoulders composition (not the full body — a full-body photo
-forced into a circle reads badly, so it was reframed around the face and
-upper chest with normal headshot headroom) and re-encoded to 480×480 WebP
-at ~16KB. The circular mask, gold ring, and shadow are all applied by CSS
-on the surrounding frame (`object-fit: cover` inside a clipped circle), so
-the image itself is a plain square — nothing about it depends on being
-circular, which keeps it easy to reuse elsewhere if needed later.
+The circular founder-photo frame that previously sat in the
+authority/video-transition section has been removed. The reasoning given:
+the video immediately below it already shows the founder speaking
+directly to camera, so a static photo of the same person right before
+that read as redundant. `assets/founder-photo.webp` has been deleted from
+the repo (nothing references it anymore); the write-up line in that
+section — "Training starts today but before you join, watch this 3-minute
+video first." — was left untouched, exactly as instructed. The section is
+now just that one line, still functioning as the transition beat into the
+video.
 
-### "Replaced by AI" reference graphic — done, and the earlier risk is resolved
+### "Replaced by AI" reference graphic — updated to the full composite
 
 `assets/replaced-by-ai.webp` is a stylized illustration — five
 silhouetted, non-identifiable figures each stamped "sacked," with role
 tags (programmer, content creator, data analyst, copywriter, CRM
-specialist). Because the faces are not real, identifiable people, this
-does not trigger the consent risk flagged in the previous version of this
-README (see the git history for that note if you want the full reasoning
-again). The supplied graphic was a two-part composite — this photo grid,
-plus a separate "REPLACED" role-list card stacked beneath it. Only the
-photo grid was used here; the role-list portion was dropped because it
-duplicates information already in the page's copy, and a tall composite
-with two stacked graphics and fine print would not read clearly at the
-small size this card renders at. If you want the full composite instead,
-say so and it will be swapped in as-is.
+specialist), plus a "REPLACED" role-list card beneath. Because the faces
+are not real, identifiable people, this does not trigger the consent risk
+flagged in an earlier version of this README (see git history for that
+reasoning if needed). An earlier pass used only the photo-grid half of
+this graphic and dropped the role-list half; you flagged that as
+incomplete, so this version uses the full composite exactly as supplied,
+uncropped. The card's aspect ratio was changed to match the image's own
+proportions (800×1103) so nothing gets cropped by `object-fit: cover` —
+previously it was forced into a 4:3 box that would have cut off the
+bottom portion. One visible side effect worth knowing: this card is now
+noticeably taller than the other three audience cards in the grid, since
+it is carrying a tall two-part graphic rather than a small icon. If that
+unevenness bothers you once you see it live, the fix is either cropping
+back to one half (as before) or moving this card to its own full-width
+row instead of the 2-column grid — say which and I will make the change.
 
 ### Training video — done, but self-hosted on explicit instruction, which deviates from the brief
 
@@ -227,15 +233,15 @@ same set.
   no framework or library.
 - Fonts loaded via Google Fonts with `preconnect` and `display=swap` so
   text is not blocked waiting on font download.
-- Total media payload: `founder-photo.webp` (~16KB), `replaced-by-ai.webp`
-  (~27KB), `training-video-poster.jpg` (~108KB), and
-  `training-video.mp4` (~19.7MB, only fetched if the visitor presses
-  play — see `preload="none"` in the Training Video section above).
-  Everything else on the page — every curriculum/audience icon, the CTA
-  and disqualifier icons — is inline SVG, so there is nothing else to
-  compress.
-- None of the three images carry `loading="lazy"` — each sits close
-  enough to its own section's top, in a section a visitor reaches by
+- Total media payload: `replaced-by-ai.webp` (~43KB, larger than the
+  earlier cropped version since it is now the full uncropped composite),
+  `training-video-poster.jpg` (~108KB), and `training-video.mp4`
+  (~19.7MB, only fetched if the visitor presses play — see
+  `preload="none"` in the Training Video section above). Everything else
+  on the page — every curriculum/audience icon, the CTA and disqualifier
+  icons — is inline SVG, so there is nothing else to compress.
+- The video poster does not carry `loading="lazy"` — it sits close enough
+  to its own section's top, in a section a visitor reaches by
   scrolling to it anyway, that lazy-loading would delay a visible element
   without a real benefit. If future phases add imagery further down the
   page, that new imagery should be lazy-loaded.
