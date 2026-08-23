@@ -55,7 +55,43 @@ unevenness bothers you once you see it live, the fix is either cropping
 back to one half (as before) or moving this card to its own full-width
 row instead of the 2-column grid — say which and I will make the change.
 
-### Training video — done, but self-hosted on explicit instruction, which deviates from the brief
+### TikTok server-side tracking (Events API) — done, pending one Vercel setting
+
+Added because browser-only pixel tracking was overcounting relative to
+actual WhatsApp group membership (322 reported conversions vs. ~254
+actual members at the time this was raised). Two pieces:
+
+- **`api/track.js`** — a Vercel serverless function that forwards events
+  to TikTok's Events API using the same pixel ID already live in
+  `index.html` (`DA2VFEBC77UAAA42UMQ0`), reading the access token from
+  `process.env.TIKTOK_ACCESS_TOKEN`. That variable is **not set yet** —
+  see "Deploy (Vercel)" above for the exact steps. Until it is set, this
+  endpoint returns an error (visible in Vercel's function logs) rather
+  than silently no-op'ing.
+- **`ttqTrack()` in `index.html`** — every call now generates a shared
+  `event_id`, passes it to the browser pixel (`ttq.track(event, params,
+  { event_id })`) and to `/api/track` in the same breath, so TikTok's
+  dedup logic can recognize the browser and server report of the same
+  click as one conversion rather than two. Nothing about the existing
+  call sites changed — `trackCTA()` and the video milestone tracking
+  still just call `ttqTrack(eventName, params)` as before.
+
+**Set expectations correctly before judging this by the dashboard
+number**: this will likely tighten the 322-vs-254 gap somewhat (it
+addresses ad-blocker loss, iOS tracking prevention, and some bot/click-
+fraud traffic that browser-only tracking misses or double-reports), but
+it will not close the gap entirely, and it is important you go in
+knowing that rather than being surprised later. Every event this system
+tracks — browser or server — fires on **CTA click** (intent to join),
+because that is the only moment a website can observe. It cannot see
+whether someone actually completed joining the WhatsApp group afterward,
+whether they left after joining, or whether they were already a member
+from a previous cohort. Closing that specific gap would require
+WhatsApp's Business Platform API for a real join-confirmation webhook —
+a separate, heavier integration with its own account setup, not part of
+this change. Flag it if you want that scoped as its own piece of work.
+
+
 
 `assets/training-video.mp4` is the supplied file, copied in byte-for-byte
 (checksum-verified against the original upload — nothing was re-encoded,
@@ -136,7 +172,11 @@ All three ttq calls are wrapped in a guard (`ttqTrack()` in the script)
 that silently no-ops if the pixel script is blocked or fails to load —
 an ad blocker or privacy extension on a visitor's device cannot throw an
 error that breaks CTA clicks, the countdown, or video playback. The pixel
-is additive to the page, never load-bearing for it.
+is additive to the page, never load-bearing for it. As of the server-side
+tracking addition above, every one of these three events also fires a
+matching server-side event through `/api/track.js` with a shared
+`event_id`, so the two reports of the same click reconcile in TikTok's
+dedup logic instead of counting twice.
 
 **Verify it's actually firing** before spending ad budget on this: open
 TikTok Events Manager → Test Events, load the live page with that tool's
@@ -199,9 +239,28 @@ event if one fits more precisely.
 2. Framework Preset: **Other**.
 3. Build Command: leave blank.
 4. Output Directory: repository root (`.`).
-5. Deploy. `index.html` is served as-is.
+5. **Required as of the TikTok Events API addition** — in the Vercel
+   project's Settings → Environment Variables, add:
+   - Key: `TIKTOK_ACCESS_TOKEN`
+   - Value: the access token generated in TikTok Ads Manager (Assets >
+     Events > pixel > Settings > Conversions API).
+   - Apply to Production (and Preview, if you want server-side tracking
+     to also work on preview deployments).
 
-No environment variables or API keys are required for this page at any phase — it is static HTML/CSS/JS end to end.
+   Without this variable set, `/api/track.js` fails closed — it returns
+   an error rather than silently doing nothing, so a missing token shows
+   up in Vercel's function logs instead of hiding as a quiet tracking gap.
+   The token is never in this repo's code; grep the repo yourself if you
+   want to confirm that directly.
+6. Deploy. `index.html` is served as-is; `/api/track.js` is
+   auto-detected by Vercel as a serverless function because it lives in
+   an `/api` directory at the repo root — this works regardless of the
+   "Other" framework preset, no extra configuration needed.
+
+Static assets and page markup require no environment variables. The one
+new requirement is `TIKTOK_ACCESS_TOKEN`, needed only for the
+server-side tracking endpoint described under "TikTok server-side
+tracking" below.
 
 ## Color system (locked)
 
@@ -294,9 +353,13 @@ same set.
 
 ## Known gaps before this can run as paid traffic
 
-- TikTok Pixel is live and wired to real events (see "TikTok Pixel" above)
-  — verify it in TikTok Events Manager's Test Events tool before spending
-  ad budget. Meta Pixel is not wired yet, pending your Pixel ID.
+- TikTok Pixel is live and wired to real events (see "TikTok Pixel"
+  above) — verify it in TikTok Events Manager's Test Events tool before
+  spending ad budget. Meta Pixel is not wired yet, pending your Pixel ID.
+- **`TIKTOK_ACCESS_TOKEN` is not set in Vercel yet** — the server-side
+  tracking code is deployed but will return errors (visible in Vercel's
+  function logs, not to visitors) until this environment variable is
+  added. See "Deploy (Vercel)" above for the exact steps.
 - Business contact info is not filled into the footer's legal modals.
 - The marquee's five line items are new copy written for this build, not
   from the original brief, and still await your explicit sign-off.

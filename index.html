@@ -1209,21 +1209,67 @@
     // tracking that looks like it works but silently reports nothing.
     window.dataLayer = window.dataLayer || [];
 
+    // Short unique id shared between the browser pixel event and the
+    // matching server-side event below, so TikTok's Events API dedup
+    // logic treats them as one conversion instead of two. Does not need
+    // to be cryptographically random — only unique enough per event.
+    function generateEventId() {
+      return 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+    }
+
+    // Fire-and-forget POST to the serverless endpoint in /api/track.js,
+    // which forwards to TikTok's Events API using the access token
+    // stored in Vercel's environment variables (never in this file).
+    // keepalive keeps the request alive even if the tab is mid-navigation
+    // (relevant here since CTAs open WhatsApp in a new tab rather than
+    // navigating away, but kept as a safety margin regardless). Failures
+    // are swallowed on purpose — a tracking gap should never surface as
+    // a visible error to a real visitor.
+    function sendServerEvent(eventName, eventId) {
+      try {
+        fetch('/api/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+          body: JSON.stringify({
+            event: eventName,
+            event_id: eventId,
+            url: window.location.href,
+          }),
+        }).catch(function (err) {
+          if (window.console && console.warn) {
+            console.warn('[server_track_failed]', eventName, err);
+          }
+        });
+      } catch (err) {
+        if (window.console && console.warn) {
+          console.warn('[server_track_failed]', eventName, err);
+        }
+      }
+    }
+
     // Guards every ttq call so a blocked or slow-to-load pixel script
     // (ad blockers, privacy extensions, a flaky connection) can never
     // throw an error that breaks CTA clicks, the countdown, or video
     // playback — the pixel is additive, never load-bearing for the
-    // page itself.
+    // page itself. Every call also fires the matching server-side event
+    // with the same event_id, so browser and server tracking of the
+    // same action reconcile as a single conversion in TikTok's reporting
+    // instead of inflating the count.
     function ttqTrack(eventName, params) {
+      var eventId = generateEventId();
+
       try {
         if (typeof window.ttq !== 'undefined' && window.ttq.track) {
-          window.ttq.track(eventName, params || {});
+          window.ttq.track(eventName, params || {}, { event_id: eventId });
         }
       } catch (err) {
         if (window.console && console.warn) {
           console.warn('[ttq_track_failed]', eventName, err);
         }
       }
+
+      sendServerEvent(eventName, eventId);
     }
 
     function trackCTA(eventName) {
